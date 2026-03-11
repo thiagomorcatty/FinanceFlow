@@ -3,34 +3,61 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { Lock, Mail, Cloud, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { Lock, Mail, Cloud, ArrowRight, Eye, EyeOff, User } from "lucide-react";
 import Link from "next/link";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { register } = useAuth();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
 
+    if (password !== confirmPassword) {
+      setError("As senhas não coincidem.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("A senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      await login(email, password);
+      await register(email, password);
+
+      // Create user in database
+      await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          role: "CONSULTANT",
+        }),
+      });
+
       router.push("/dashboard");
     } catch (err: any) {
       console.error(err);
-      if (err.code === "auth/user-not-found" || err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
-        setError("E-mail ou senha incorretos.");
-      } else if (err.code === "auth/too-many-requests") {
-        setError("Muitas tentativas. Tente novamente mais tarde.");
+      if (err.code === "auth/email-already-in-use") {
+        setError("Este e-mail já está registado.");
+      } else if (err.code === "auth/weak-password") {
+        setError("A senha é muito fraca. Use pelo menos 6 caracteres.");
+      } else if (err.code === "auth/invalid-email") {
+        setError("E-mail inválido.");
       } else {
-        setError("Erro ao fazer login. Tente novamente.");
+        setError("Erro ao criar conta. Tente novamente.");
       }
     } finally {
       setLoading(false);
@@ -69,30 +96,27 @@ export default function LoginPage() {
           </h1>
           <div className="h-0.5 w-32 mx-auto bg-gradient-to-r from-transparent via-cyan-400 to-transparent mb-6" />
           <p className="text-white/60 text-lg max-w-sm">
-            CRM completo para mediadores financeiros
+            Junte-se à plataforma líder em mediação financeira
           </p>
-          <div className="mt-12 grid grid-cols-2 gap-4 text-white/50 text-sm">
-            <div className="bg-white/5 rounded-lg p-4 backdrop-blur-sm">
-              <p className="text-white/80 font-semibold text-2xl mb-1">360°</p>
-              <p>Gestão de Clientes</p>
-            </div>
-            <div className="bg-white/5 rounded-lg p-4 backdrop-blur-sm">
-              <p className="text-white/80 font-semibold text-2xl mb-1">📊</p>
-              <p>Relatórios Avançados</p>
-            </div>
-            <div className="bg-white/5 rounded-lg p-4 backdrop-blur-sm">
-              <p className="text-white/80 font-semibold text-2xl mb-1">🏦</p>
-              <p>Propostas Bancárias</p>
-            </div>
-            <div className="bg-white/5 rounded-lg p-4 backdrop-blur-sm">
-              <p className="text-white/80 font-semibold text-2xl mb-1">💰</p>
-              <p>Comissões</p>
-            </div>
+          <div className="mt-12 space-y-3 text-left max-w-sm">
+            {[
+              "Gestão completa de clientes e processos",
+              "Pipeline visual com Kanban board",
+              "Relatórios e analytics em tempo real",
+              "Controlo de comissões automatizado",
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-3 text-white/60 text-sm">
+                <div className="w-6 h-6 rounded-full bg-cyan-400/20 flex items-center justify-center flex-shrink-0">
+                  <span className="text-cyan-400 text-xs">✓</span>
+                </div>
+                {item}
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Right panel - Login Form */}
+      {/* Right panel - Register Form */}
       <div className="flex-1 flex items-center justify-center p-8 bg-white">
         <div className="w-full max-w-md animate-fade-in">
           <div className="flex items-center gap-2 mb-2 lg:hidden">
@@ -102,9 +126,9 @@ export default function LoginPage() {
             </h1>
           </div>
 
-          <h2 className="text-2xl font-bold text-sidebar mb-1">Bem-vindo de volta</h2>
+          <h2 className="text-2xl font-bold text-sidebar mb-1">Criar conta</h2>
           <p className="text-muted-foreground mb-8">
-            Entre com suas credenciais para acessar o sistema
+            Preencha os dados para criar a sua conta
           </p>
 
           {error && (
@@ -113,7 +137,25 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-5">
+          <form onSubmit={handleRegister} className="space-y-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1.5">
+                Nome completo
+              </label>
+              <div className="relative">
+                <User size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  id="name"
+                  type="text"
+                  placeholder="Seu nome"
+                  className="w-full pl-10 pr-4 py-2.5 border border-input rounded-lg bg-white focus:ring-2 focus:ring-active/20 focus:border-active transition-all outline-none text-sm"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5">
                 E-mail
@@ -141,7 +183,7 @@ export default function LoginPage() {
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
+                  placeholder="Mínimo 6 caracteres"
                   className="w-full pl-10 pr-10 py-2.5 border border-input rounded-lg bg-white focus:ring-2 focus:ring-active/20 focus:border-active transition-all outline-none text-sm"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -157,38 +199,46 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" className="rounded border-input" />
-                <span className="text-muted-foreground">Lembrar-me</span>
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-1.5">
+                Confirmar senha
               </label>
-              <a href="#" className="text-active hover:text-active/80 font-medium transition-colors">
-                Esqueceu a senha?
-              </a>
+              <div className="relative">
+                <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  id="confirmPassword"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Repita a senha"
+                  className="w-full pl-10 pr-4 py-2.5 border border-input rounded-lg bg-white focus:ring-2 focus:ring-active/20 focus:border-active transition-all outline-none text-sm"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-accent hover:bg-accent/90 text-white font-semibold py-2.5 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-accent/25 hover:shadow-xl hover:shadow-accent/30 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full bg-accent hover:bg-accent/90 text-white font-semibold py-2.5 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-accent/25 hover:shadow-xl hover:shadow-accent/30 disabled:opacity-70 disabled:cursor-not-allowed mt-2"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  Entrar
+                  Criar Conta
                   <ArrowRight size={18} />
                 </>
               )}
             </button>
           </form>
 
-          {/* Register link */}
+          {/* Login link */}
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
-              Não tem uma conta?{" "}
-              <Link href="/register" className="text-active hover:text-active/80 font-semibold transition-colors">
-                Criar conta
+              Já tem uma conta?{" "}
+              <Link href="/login" className="text-active hover:text-active/80 font-semibold transition-colors">
+                Fazer login
               </Link>
             </p>
           </div>
