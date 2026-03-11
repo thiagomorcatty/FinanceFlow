@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
   try {
-    // Create admin user in database
     const adminEmail = "admin@email.com";
 
     const existing = await prisma.user.findUnique({
@@ -11,6 +10,14 @@ export async function POST(request: NextRequest) {
     });
 
     if (existing) {
+      // Ensure the role is ADMIN
+      if (existing.role !== "ADMIN") {
+        const updated = await prisma.user.update({
+          where: { email: adminEmail },
+          data: { role: "ADMIN" },
+        });
+        return NextResponse.json({ message: "Admin atualizado para ADMIN", user: updated });
+      }
       return NextResponse.json({ message: "Admin já existe", user: existing });
     }
 
