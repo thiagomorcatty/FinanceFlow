@@ -1,0 +1,194 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String    @id @default(cuid())
+  name       String
+  email      String    @unique
+  password   String
+  role       Role      @default(CONSULTANT)
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  processes  Process[] @relation("AssignedUser")
+  tasks      Task[]    @relation("AssignedTaskUser")
+
+  @@map("users")
+}
+
+model Client {
+  id            String    @id @default(cuid())
+  name          String
+  email         String?
+  phone         String?
+  taxNumber     String?   @map("tax_number")
+  address       String?
+  profession    String?
+  monthlyIncome Float?    @map("monthly_income")
+  maritalStatus String?   @map("marital_status")
+  dependents    Int?      @default(0)
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  processes     Process[]
+  documents     Document[]
+  notes         Note[]
+
+  @@map("clients")
+}
+
+model Process {
+  id              String        @id @default(cuid())
+  clientId        String        @map("client_id")
+  serviceType     ServiceType   @map("service_type")
+  requestedAmount Float?        @map("requested_amount")
+  status          PipelineStage @default(NEW_LEAD)
+  assignedUserId  String?       @map("assigned_user_id")
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  client          Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  assignedUser    User?         @relation("AssignedUser", fields: [assignedUserId], references: [id])
+  offers          Offer[]
+  documents       Document[]
+  commissions     Commission[]
+  tasks           Task[]
+  notes           Note[]
+
+  @@map("processes")
+}
+
+model Bank {
+  id                   String  @id @default(cuid())
+  name                 String
+  contactEmail         String? @map("contact_email")
+  commissionPercentage Float?  @map("commission_percentage")
+
+  @@map("banks")
+}
+
+model InsuranceCompany {
+  id                   String  @id @default(cuid())
+  name                 String
+  contactEmail         String? @map("contact_email")
+  commissionPercentage Float?  @map("commission_percentage")
+
+  @@map("insurance_companies")
+}
+
+model Offer {
+  id              String      @id @default(cuid())
+  processId       String      @map("process_id")
+  institutionName String      @map("institution_name")
+  productType     String?     @map("product_type")
+  interestRate    Float?      @map("interest_rate")
+  monthlyPayment  Float?      @map("monthly_payment")
+  status          OfferStatus @default(PENDING)
+  createdAt       DateTime    @default(now()) @map("created_at")
+
+  process         Process     @relation(fields: [processId], references: [id], onDelete: Cascade)
+
+  @@map("offers")
+}
+
+model Document {
+  id           String   @id @default(cuid())
+  clientId     String   @map("client_id")
+  processId    String?  @map("process_id")
+  documentType String   @map("document_type")
+  fileUrl      String   @map("file_url")
+  uploadedAt   DateTime @default(now()) @map("uploaded_at")
+
+  client       Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  process      Process? @relation(fields: [processId], references: [id])
+
+  @@map("documents")
+}
+
+model Commission {
+  id               String        @id @default(cuid())
+  processId        String        @map("process_id")
+  institution      String
+  commissionAmount Float         @map("commission_amount")
+  paymentStatus    PaymentStatus @default(PENDING) @map("payment_status")
+
+  process          Process       @relation(fields: [processId], references: [id], onDelete: Cascade)
+
+  @@map("commissions")
+}
+
+model Task {
+  id             String     @id @default(cuid())
+  processId      String?    @map("process_id")
+  assignedUserId String?    @map("assigned_user_id")
+  description    String
+  dueDate        DateTime?  @map("due_date")
+  status         TaskStatus @default(PENDING)
+
+  process        Process?   @relation(fields: [processId], references: [id])
+  assignedUser   User?      @relation("AssignedTaskUser", fields: [assignedUserId], references: [id])
+
+  @@map("tasks")
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  clientId  String?  @map("client_id")
+  processId String?  @map("process_id")
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  client    Client?  @relation(fields: [clientId], references: [id])
+  process   Process? @relation(fields: [processId], references: [id])
+
+  @@map("notes")
+}
+
+enum Role {
+  ADMIN
+  CONSULTANT
+  MANAGER
+}
+
+enum ServiceType {
+  MORTGAGE
+  PERSONAL_CREDIT
+  INSURANCE
+  ACCOUNTING
+  CREDIT_TRANSFER
+}
+
+enum PipelineStage {
+  NEW_LEAD
+  DOCUMENTS_REQUESTED
+  FINANCIAL_ANALYSIS
+  SIMULATION
+  SUBMITTED_TO_BANKS
+  PROPOSAL_RECEIVED
+  CLIENT_DECISION
+  APPROVED
+  CONTRACT_SIGNED
+  COMPLETED
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  OVERDUE
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
