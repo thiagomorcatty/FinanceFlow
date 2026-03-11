@@ -31,11 +31,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    // Prevent crash if Firebase auth is not fully initialized (e.g. missing env vars in Vercel)
+    if (!auth || Object.keys(auth).length === 0) {
+      console.warn("Firebase Auth is not initialized. Check your environment variables.");
       setLoading(false);
-    });
-    return () => unsubscribe();
+      return;
+    }
+
+    try {
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        setUser(user);
+        setLoading(false);
+      });
+      return () => unsubscribe();
+    } catch (e) {
+      console.error("Firebase auth error:", e);
+      setLoading(false);
+    }
   }, []);
 
   const login = async (email: string, password: string) => {
