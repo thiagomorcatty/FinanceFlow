@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
@@ -18,6 +18,7 @@ import {
   Menu,
 } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -33,11 +34,21 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push("/login");
+    } catch (error) {
+      console.error("Erro ao fazer logout", error);
+    }
+  };
 
   return (
     <>
-      {/* Mobile overlay */}
       <button
         className="lg:hidden fixed top-4 left-4 z-50 bg-sidebar text-white p-2 rounded-lg shadow-lg"
         onClick={() => setCollapsed(!collapsed)}
@@ -50,7 +61,6 @@ export default function Sidebar() {
           collapsed ? "-translate-x-full lg:translate-x-0 lg:w-20" : "translate-x-0 w-64"
         }`}
       >
-        {/* Logo */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-white/10">
           {!collapsed && (
             <h1 className="text-lg font-bold tracking-wider">
@@ -68,7 +78,6 @@ export default function Sidebar() {
           </button>
         </div>
 
-        {/* Nav */}
         <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
             const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
@@ -90,9 +99,11 @@ export default function Sidebar() {
           })}
         </nav>
 
-        {/* Footer */}
         <div className="p-3 border-t border-white/10">
-          <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/10 transition-all w-full">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/10 transition-all w-full"
+          >
             <LogOut size={20} className="flex-shrink-0" />
             {!collapsed && <span>Sair</span>}
           </button>

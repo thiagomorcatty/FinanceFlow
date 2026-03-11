@@ -19,9 +19,19 @@ const firebaseConfig = {
 };
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-export const auth = getAuth(app);
+
+// Safe init for Vercel SSR without valid API keys
+let auth = {} as ReturnType<typeof getAuth>;
+try {
+  if (firebaseConfig.apiKey) {
+    auth = getAuth(app);
+  }
+} catch (error) {
+  console.warn("Firebase Auth could not be initialized. Missing API key?");
+}
 
 export {
+  auth,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
