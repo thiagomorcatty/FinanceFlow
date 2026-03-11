@@ -3,11 +3,12 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const client = await prisma.client.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         processes: { include: { offers: true } },
         documents: true,
@@ -25,12 +26,13 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const client = await prisma.client.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name: body.name,
         email: body.email,
@@ -51,10 +53,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await prisma.client.delete({ where: { id: params.id } });
+    const { id } = await params;
+    await prisma.client.delete({ where: { id } });
     return NextResponse.json({ message: "Cliente eliminado" });
   } catch (error) {
     return NextResponse.json({ error: "Erro ao eliminar cliente" }, { status: 500 });

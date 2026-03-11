@@ -1,0 +1,98 @@
+﻿
+> financeflow@0.1.0 build
+> next build
+
+node.exe : ÔÜá Warning: 
+Next.js inferred your 
+workspace root, but it may 
+not be correct.
+No linha:1 caractere:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
+    + CategoryInfo         
+     : NotSpecified: (ÔÜá  
+   Warning: Ne...not be    
+ correct.:String) [], R    
+emoteException
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 
+ We detected multiple 
+lockfiles and selected the 
+directory of C:\Users\thiag
+\package-lock.json as the 
+root directory.
+ To silence this warning, 
+set `turbopack.root` in 
+your Next.js config, or 
+consider removing one of 
+the lockfiles if it's not 
+needed.
+   See https://nextjs.org/d
+ocs/app/api-reference/confi
+g/next-config-js/turbopack#
+root-directory for more 
+information.
+ Detected additional 
+lockfiles: 
+   * C:\Users\thiag\ROBONUV
+EM\Finance Flow\FinanceFlow
+\package-lock.json
+
+Ôû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env
+
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build 
+failed with 1 errors:
+./ROBONUVEM/Finance Flow/Fi
+nanceFlow/src/app/globals.c
+ss:1539:8
+Parsing CSS source code 
+failed
+[0m [90m 1537 |[39m }
+ [90m 1538 |[39m
+[31m[1m>[22m[39m[90m 
+1539 |[39m [33m@[39m[36
+mimport[39m url([32m'http
+s://fonts.googleapis.com/cs
+s2?family=Inter:wght@400;50
+0;600;700&display=swap'[39
+m)[33m;[39m
+ [90m      |[39m        
+[31m[1m^[22m[39m
+ [90m 1540 |[39m
+ [90m 1541 |[39m [90m/* 
+Scrollbar */[39m
+ [90m 1542 |[39m [33m:[
+39m[33m:[39m[33m-[39mwe
+bkit[33m-[39mscrollbar 
+{[0m
+
+@import rules must precede 
+all rules aside from 
+@charset and @layer 
+statements
+
+Import trace:
+  Client Component Browser:
+    ./ROBONUVEM/Finance Flo
+w/FinanceFlow/src/app/globa
+ls.css [Client Component 
+Browser]
+    ./ROBONUVEM/Finance Flo
+w/FinanceFlow/src/app/layou
+t.tsx [Server Component]
+
+
+    at <unknown> 
+(./ROBONUVEM/Finance Flow/F
+inanceFlow/src/app/globals.
+css:1539:8)

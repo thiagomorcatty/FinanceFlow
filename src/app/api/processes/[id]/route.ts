@@ -3,11 +3,12 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const process = await prisma.process.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         client: true,
         assignedUser: true,
@@ -29,12 +30,13 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const process = await prisma.process.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         serviceType: body.serviceType,
         requestedAmount: body.requestedAmount ? parseFloat(body.requestedAmount) : undefined,
@@ -50,10 +52,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await prisma.process.delete({ where: { id: params.id } });
+    const { id } = await params;
+    await prisma.process.delete({ where: { id } });
     return NextResponse.json({ message: "Processo eliminado" });
   } catch (error) {
     return NextResponse.json({ error: "Erro ao eliminar processo" }, { status: 500 });

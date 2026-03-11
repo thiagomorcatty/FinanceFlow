@@ -190,10 +190,10 @@ export default function ProcessesPage() {
                         </div>
                       </td>
                       <td className="py-3 px-4 hidden md:table-cell font-medium text-foreground">
-                        {proc.requestedAmount ? \`€\${proc.requestedAmount.toLocaleString()}\` : "—"}
+                        {proc.requestedAmount ? `€${proc.requestedAmount.toLocaleString()}` : "—"}
                       </td>
                       <td className="py-3 px-4">
-                        <span className={\`text-xs px-2.5 py-1 rounded-full font-medium \${st.color}\`}>{st.label}</span>
+                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${st.color}`}>{st.label}</span>
                       </td>
                       <td className="py-3 px-4 hidden lg:table-cell text-muted-foreground">{proc.assignedUser?.name || "Não atribuído"}</td>
                       <td className="py-3 px-4">
@@ -221,7 +221,7 @@ export default function ProcessesPage() {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden flex flex-col">
             <div className="flex items-center justify-between p-5 border-b border-border">
               <h2 className="text-lg font-semibold text-foreground">Novo Processo</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-muted-foreground hover:text-foreground">
+              <button type="button" onClick={() => setIsModalOpen(false)} className="text-muted-foreground hover:text-foreground">
                 <X size={20} />
               </button>
             </div>
